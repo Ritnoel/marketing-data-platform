@@ -1,0 +1,12 @@
+version: 2
+models:
+
+  - name: int_facebook_ads_stats
+    description: >
+      Facebook daily ad performance with the account currency attached.
+      Grain: one row per ad, per day.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ad_id
+            - ad_date

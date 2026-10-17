@@ -1,0 +1,12 @@
+version: 2
+models: 
+
+  - name: int_snapchat_ads_stats
+    description: >
+      Snapchat daily ad performance, summed across countries.
+      Grain: one row per ad, per day, per currency.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ad_id
+            - ad_date

@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: int_facebook_ads_details
+    description: >
+      Facebook ad details with ad group, campaign and account names attached,
+      using the latest version of each record.
+      Grain: one row per ad.
+    columns:
+      - name: ad_id
+        data_tests:
+          - unique
+          - not_null

@@ -1,0 +1,13 @@
+version: 2 
+
+models:
+  - name: int_snapchat_ads_details
+    description: >
+      Snapchat ad details with ad group and campaign names attached,
+      using the latest version of each ad group.
+      Grain: one row per ad.
+    columns:
+      - name: ad_id
+        data_tests:
+          - unique
+          - not_null

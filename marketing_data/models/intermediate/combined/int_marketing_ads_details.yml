@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: int_marketing_ads_details
+    description: >
+      Facebook and Snapchat ad details stacked into one model, using the
+      latest version of each record on both platforms.
+      Grain: one row per ad, per platform.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - ad_id
+              - platform
+    columns:
+      - name: ad_id
+        description: Ad identifier from the source platform. Only unique together with platform.
+        data_tests:
+          - not_null
+      - name: ad_group_id
+        description: Identifier of the ad group the ad belongs to, from the source platform.
+      - name: campaign_id
+        description: Identifier of the campaign the ad belongs to, from the source platform.
+      - name: ad_name
+        description: Name of the ad.
+      - name: ad_group_name
+        description: Name of the ad group. Can be null for ads without an ad group.
+      - name: campaign_name
+        description: Name of the campaign. Can be null for ads without an ad group.
+      - name: channel_name
+        description: Marketing channel the platform belongs to.
+      - name: ad_detail_updated_at
+        description: Latest update timestamp across the records the ad details were built from.
+      - name: platform
+        description: Advertising platform the row comes from.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['facebook', 'snapchat']
