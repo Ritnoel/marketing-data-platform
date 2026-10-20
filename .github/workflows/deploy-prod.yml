@@ -1,0 +1,36 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  dbt-prod:
+    runs-on: ubuntu-latest
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}/ci
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      PROD_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DBX_ID_APPLICATION_ID: ${{ secrets.DBX_ID_APPLICATION_ID }}
+      DBX_SECRET: ${{ secrets.DBX_SECRET }}
+      PROD_CATALOG: prod_catalog
+      PROD_SCHEMA: marketing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install dbt packages
+        working-directory: marketing_data
+        run: uv run dbt deps
+
+      - name: Build production models
+        working-directory: marketing_data
+        run: uv run dbt build --target prod

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}/ci
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      CI_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DBX_ID_APPLICATION_ID: ${{ secrets.DBX_ID_APPLICATION_ID }}
+      DBX_SECRET: ${{ secrets.DBX_SECRET }}
+      CI_CATALOG: ci_catalog
+      CI_SCHEMA: ci_pr_${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install dbt packages
+        working-directory: marketing_data
+        run: uv run dbt deps
+
+      - name: Build and test models
+        working-directory: marketing_data
+        run: uv run dbt build --target ci
+
+      - name: Generate docs
+        working-directory: marketing_data
+        run: uv run dbt docs generate --target ci
+
+      - name: Keep the docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-docs
+          path: |
+            marketing_data/target/index.html
+            marketing_data/target/manifest.json
+            marketing_data/target/catalog.json
