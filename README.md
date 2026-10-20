@@ -321,5 +321,4 @@ marketing-data-platform/
 
 **Known issues and next steps**:
 
-- [ ] GitHub Actions CI run fails at the connection step** (`http_path` arrives empty).
-- [ ] Answering business questions not done
+- [ ] GitHub Actions CI keeps running without errors or logs, Investigate why this happens.
