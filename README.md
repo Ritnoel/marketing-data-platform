@@ -321,5 +321,5 @@ marketing-data-platform/
 
 **Known issues and next steps**:
 
-- [ ] GitHub Actions CI run fails at the connection step** (`http_path` arrives empty). The workflow is found and runs, installs dependencies and parses the whole project, so the structure is sound. Next step: check that the secret `DATABRICKS_HTTP_PATH` exists with that exact name, as a repository secret, and re-run.
+- [ ] GitHub Actions CI run fails at the connection step** (`http_path` arrives empty).
 - [ ] Answering business questions not done
