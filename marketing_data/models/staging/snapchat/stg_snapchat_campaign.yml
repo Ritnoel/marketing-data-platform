@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: stg_snapchat_campaigns
+  - name: stg_snapchat_campaign
     description: snapchat campaign history
     data_tests:
       - dbt_utils.unique_combination_of_columns:

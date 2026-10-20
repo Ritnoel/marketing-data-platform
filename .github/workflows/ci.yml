@@ -14,7 +14,7 @@ jobs:
     env:
       DBT_PROFILES_DIR: ${{ github.workspace }}/ci
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      CI_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      CI_HTTP_PATH: ${{ secrets.PROD_HTTP_PATH }}
       DBX_ID_APPLICATION_ID: ${{ secrets.DBX_ID_APPLICATION_ID }}
       DBX_SECRET: ${{ secrets.DBX_SECRET }}
       CI_CATALOG: ci_catalog

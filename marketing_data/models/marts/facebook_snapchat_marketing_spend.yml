@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: fct_marketing_spend
+  - name: facebook_snapchat_marketing_spend
     description: >
       Unified Facebook and Snapchat advertising performance, with ad, ad group
       and campaign names attached. Built from int_marketing_ads_stats and
