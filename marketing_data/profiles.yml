@@ -8,8 +8,8 @@ marketing_data:
     base_auth: &base_auth
       type: databricks
       auth_type: oauth
-      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
-      client_secret: "{{ env_var('DBX_SECRET') }}"
+      client_id: "{{ env_var('DATABRICKS_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DATABRICKS_SECRET') }}"
       threads: 8
       connect_retries: 3
       retry_all: true
@@ -45,7 +45,7 @@ elementary:
   outputs:
     dev:
       <<: *dev_target
-      schema: "{{ env_var('DEV_SCHEMA') }}_elementary"
+      schema: "{{ env_var('DEV_SCHEMA') }}"
     ci:
       <<: *ci_target
       schema: "{{ env_var('CI_SCHEMA') }}_elementary"

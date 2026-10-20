@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: stg_facebook_ad_stats
+  - name: stg_facebook_ads_stats
     description: Facebook daily stats aggregated at the ad level
     data_tests:
       - dbt_utils.unique_combination_of_columns:
