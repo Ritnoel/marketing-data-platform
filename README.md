@@ -318,7 +318,8 @@ marketing-data-platform/
 - Unity Catalog grants applied and verified with `SHOW GRANTS`
 - dbt docs and lineage generated
 - Elementary working
+- CI working
 
 **Known issues and next steps**:
 
-- [ ] GitHub Actions CI keeps running without errors or logs, Investigate why this happens.
+- [ ] Optimize where necessary
