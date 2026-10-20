@@ -28,7 +28,7 @@ The goal: marketers should no longer visit each advertising platform by hand. An
 
 ## Architecture
 
-![Architecture](docs/images/architecture.png)
+![Architecture](images/architecture.png)
 
 Data flows in one direction through four clearly separated layers:
 
@@ -45,7 +45,7 @@ Tooling around the pipeline: dbt tests protect the data, Elementary observes tes
 
 ## Data sources
 
-Both platforms deliver several tables, linked by ID columns. The raw tables were uploaded to `raw_marketing.ads_schema` and are declared as dbt sources.
+Both platforms have several tables, linked by ID columns. The raw tables were uploaded to `raw_marketing.ads_schema`.
 
 | Platform | Raw tables |
 |---|---|
@@ -82,14 +82,14 @@ The grain is what one row represents. Every model has one, and tests enforce it.
 | `int_facebook_ads_stats` | ad, day, with the account currency attached |
 | `int_marketing_ads_details` | ad, per platform (both details models stacked) |
 | `int_marketing_ads_stats` | ad, day, per platform (both stats models stacked) |
-| `facebook_snapchat_marketing_spend` (mart) | **ad, day, platform** |
+| `facebook_snapchat_marketing_spend` (mart) | ad, day, platform |
 
 ### The mart
 
 One big table: the stats joined to the ad, ad group and campaign names, with these columns:
 
 - **Keys:** `ad_id`, `ad_date`, `platform`. The key is the three together, because ad IDs come from two separate systems and are only unique per platform.
-- **Descriptors:** `ad_group_id`, `campaign_id`, `ad_name`, `ad_group_name`, `campaign_name`, `channel_name`, `ad_detail_updated_at`.
+- **Descriptions:** `ad_group_id`, `campaign_id`, `ad_name`, `ad_group_name`, `campaign_name`, `channel_name`, `ad_detail_updated_at`.
 - **Measures:** `ad_currency_code`, `ad_spend`, `ad_impressions`, `ad_clicks`.
 
 ### Platform differences and how they were resolved
@@ -127,8 +127,6 @@ Checks done by hand while designing the models, and the reasoning behind them:
 | Intermediate | `view` | Only feeds the mart. Nobody queries it directly, so storing it adds nothing. |
 | Mart | `table` | It is what analysts, dashboards and the AI agent query repeatedly. Storing the result avoids re-running every join and the dedupe on each query. |
 
-**Incremental models were considered and not used.** They pay off when data is large or grows constantly, because only new rows are processed. Here the data is small and static, and an incremental model would add complexity (a unique key, late-arriving data, full-refresh handling) with no real benefit. If the volume grew, the stats models and the mart are the natural candidates, keyed on `ad_id`, `ad_date` and `platform`.
-
 ## Environments
 
 The same dbt code runs in three environments. Only the catalog, the identity and the permissions change.
@@ -136,14 +134,14 @@ The same dbt code runs in three environments. Only the catalog, the identity and
 | Environment | Catalog | Who runs it | Authentication | Purpose |
 |---|---|---|---|---|
 | **dev** | `dev_catalog` | A developer, on their own machine | Personal access token | Experimenting freely |
-| **ci** | `ci_catalog` (schema `ci_pr_<number>`) | GitHub Actions, on every pull request | Service Principal (OAuth) | Proving a change builds and passes tests before it is merged |
+| **ci** | `ci_catalog` | GitHub Actions, on every pull request | Service Principal (OAuth) | Proving a change builds and passes tests before it is merged |
 | **prod** | `prod_catalog` (schema `marketing`) | GitHub Actions, after a merge to `main` | Service Principal (OAuth) | The trusted tables that consumers read |
 
 All three read from the **shared raw catalog** `raw_marketing`, so a change that passes in CI sees the same input production will see, and the data is loaded only once. dbt never writes to it. The trade-off is that a bad raw load affects every environment at once.
 
 Targets are defined in `profiles.yml`, and every value is read from an environment variable, so no real value is ever committed:
 
-- Your own machine uses a `profiles.yml` in `~/.dbt/` with the `dev` target.
+- My laptop uses a `profiles.yml` in `~/.dbt/` with the `dev` target.
 - The pipeline uses `ci/profiles.yml`, which is committed and contains only `env_var` references, with the `ci` and `prod` targets.
 
 ## Production authentication
@@ -160,7 +158,7 @@ How it logs in (OAuth 2.0, client credentials):
 
 Details:
 
-- The OAuth secret is created on the Service Principal's Secrets tab with a limited lifetime (100 days). It is shown once, kept outside the repository, and stored only in GitHub's secret store and in a local, git-ignored env file. Rotating it means generating a new one and updating the stored value.
+- The OAuth secret is created on the Service Principal's Secrets tab with a limited lifetime (100 days). It is shown once, kept outside the repository, and stored only in GitHub's secret store and in a local, git-ignored env file.
 - Entitlements: workspace access and Databricks SQL access are on. **Admin access is off**, because the Service Principal needs to build tables, not manage the workspace.
 - The Service Principal has **Can use** on the SQL warehouse.
 
@@ -177,14 +175,7 @@ Following the principle of least privilege, the Service Principal has exactly wh
 
 The developer's own account also has `USE CATALOG`, `USE SCHEMA` and `SELECT` on `ci_catalog`, to inspect what CI built.
 
-Deliberately **not** granted:
-
-- `CREATE CATALOG` on the metastore. The catalogs already exist, so dbt never needs it.
-- Any write access to `raw_marketing`.
-- Any access to `dev_catalog`.
-- Admin rights.
-
-In Unity Catalog, `CREATE TABLE` also covers creating views, which is why dbt needs it even for the view models. The grants were verified with `SHOW GRANTS` on each catalog and on the raw schema.
+The grants were verified with `SHOW GRANTS` on each catalog and on the raw schema.
 
 ## CI/CD
 
@@ -209,21 +200,12 @@ Files:
 
 `DATABRICKS_HOST`, `DATABRICKS_HTTP_PATH`, `DBX_ID_APPLICATION_ID`, `DBX_SECRET`
 
-Catalog and schema names are not secret, so they are written in the workflow files where a reviewer can read them.
-
-**Design choices and limits:**
-
-- One Service Principal serves CI and production, which keeps the grants simple. A stricter setup would use one per environment, so a pull request run could never touch production.
-- Old `ci_pr_*` schemas are not cleaned up automatically.
-- There is no manual approval step before production.
 
 ## Observability with Elementary
 
 The [Elementary](https://www.elementary-data.com/) dbt package is installed and records test results, run history and model health in tables in the warehouse. The Elementary CLI generates an HTML report from them.
 
-[CONFIRM and update this section: state whether the Elementary models are configured to build in their own schema, and whether the report now shows test results. If it does not yet, say so plainly, for example: "The package and report are set up, but the report is empty until Elementary's models are given their own schema. Next step: configure the `elementary` block under `models:` in `dbt_project.yml`."]
-
-In production, Elementary's tables should be kept in their own schema, separate from the tables consumers query.
+![Elementary](images/elementary.png)
 
 ## Documentation and lineage
 
@@ -307,8 +289,6 @@ marketing-data-platform/
 
 ## Answering the business questions
 
-The mart answers the questions in the brief directly. Examples (adjust the table name to the final model name):
-
 
 ## Design decisions
 
@@ -337,12 +317,9 @@ The mart answers the questions in the brief directly. Examples (adjust the table
 - Production build run with the Service Principal (OAuth), with models created in `prod_catalog`
 - Unity Catalog grants applied and verified with `SHOW GRANTS`
 - dbt docs and lineage generated
+- Elementary working
 
 **Known issues and next steps**:
 
 - [ ] GitHub Actions CI run fails at the connection step** (`http_path` arrives empty). The workflow is found and runs, installs dependencies and parses the whole project, so the structure is sound. Next step: check that the secret `DATABRICKS_HTTP_PATH` exists with that exact name, as a repository secret, and re-run.
-- [ ] Elementary is not working, could not implement it.
 - [ ] Answering business questions not done
-- [ ] Generic tests still use the deprecated argument layout and need their arguments nested under `arguments:`.
-- [ ] Elementary models should build in their own schema so the report shows results.
-- [ ] Old `ci_pr_*` schemas are not cleaned up, and there is no manual approval gate before production.
